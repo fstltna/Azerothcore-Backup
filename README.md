@@ -6,7 +6,7 @@ Creates a backup of your Azeroth folder
 1. Edit the settings at the top of azerocothbackup.pl if needed
 2. create a cron job like this:
 
-        1 1 * * * /home/wowowner/Azerothcore-Backup/azerocothbackup
+        1 1 * * * /home/wowowner/Azerothcore-Backup/azerothbackup
 
 3. This will back up your Azeroth installation at 1:01am each day, and keep the last 5 backups.
 
