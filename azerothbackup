@@ -7,7 +7,7 @@ my $TARCMD = "/bin/tar czf";
 my $SQLDUMPCMD = "/usr/bin/mysqldump";
 my $VERSION = "1.0.0";
 my $OPTION_FILE = "/home/wowowner/.azbackuprc";
-my $LATESTFILE = "$BACKUPDIR/azeroth.sql-1";
+my $LATESTFILE = "$BACKUPDIR/azeroth.";
 my $DOSNAPSHOT = 0;
 my $MYSQLUSER = "";
 my $MYSQLPSWD = "";
@@ -159,12 +159,17 @@ sub ReadPrefs
 sub DumpMysql
 {
 	my $DUMPFILE = $_[0];
+	my $Rotation = "";
 
+	if ($DUMPFILE eq "$BACKUPDIR/azeroth")
+	{
+		$Rotation = "-1";
+	}
 	print "Backing up MYSQL data: ";
 	# print "User = $MYSQLUSER, PSWD = $MYSQLPSWD\n";
-	system("$SQLDUMPCMD --user=$MYSQLUSER --password=$MYSQLPSWD --result-file=$DUMPFILE.world.sql $MYSQLDBNAMEWORLD > /dev/null 2>\&1");
-	system("$SQLDUMPCMD --user=$MYSQLUSER --password=$MYSQLPSWD --result-file=$DUMPFILE.character.sql $MYSQLDBNAMECHARACTERS > /dev/null 2>\&1");
-	system("$SQLDUMPCMD --user=$MYSQLUSER --password=$MYSQLPSWD --result-file=$DUMPFILE.auth.sql $MYSQLDBNAMEAUTH > /dev/null 2>\&1");
+	system("$SQLDUMPCMD --user=$MYSQLUSER --password=$MYSQLPSWD --result-file=$DUMPFILE.world.sql$Rotation $MYSQLDBNAMEWORLD > /dev/null 2>\&1");
+	system("$SQLDUMPCMD --user=$MYSQLUSER --password=$MYSQLPSWD --result-file=$DUMPFILE.character.sql$Rotation $MYSQLDBNAMECHARACTERS > /dev/null 2>\&1");
+	system("$SQLDUMPCMD --user=$MYSQLUSER --password=$MYSQLPSWD --result-file=$DUMPFILE.auth.sql$Rotation $MYSQLDBNAMEAUTH > /dev/null 2>\&1");
 	print "Done\n";
 }
 
@@ -215,11 +220,11 @@ if ((defined $CMDOPTION) && ($CMDOPTION eq "-snapshot"))
 }
 
 print "AzerothBackup version $VERSION\n";
+print "==============================\n";
 if ($DOSNAPSHOT == -1)
 {
 	print "Running Manual Snapshot\n";
 }
-print "==============================\n";
 
 if ((defined $CMDOPTION) && ($CMDOPTION eq "-prefs"))
 {
@@ -249,46 +254,71 @@ if ($DOSNAPSHOT == -1)
 	exit 0;
 }
 
-print "Moving existing backups: ";
 
-if (-f "$BACKUPDIR/azerothbackup-5.tgz")
+if ($DoFullBackup)
 {
-	unlink("$BACKUPDIR/azerothbackup-5.tgz") or warn "Could not unlink $BACKUPDIR/azerothbackup-5.tgz: $!";
-}
-
-my $FileRevision = 4;
-while ($FileRevision > 0)
-{
-	if (-f "$BACKUPDIR/azerothbackup-$FileRevision.tgz")
+	print "Moving existing backups: ";
+	if (-f "$BACKUPDIR/azerothbackup-5.tgz")
 	{
-		my $NewVersion = $FileRevision + 1;
-		rename("$BACKUPDIR/azerothbackup-$FileRevision.tgz", "$BACKUPDIR/azerothbackup-$NewVersion.tgz");
+		unlink("$BACKUPDIR/azerothbackup-5.tgz") or warn "Could not unlink $BACKUPDIR/azerothbackup-5.tgz: $!";
 	}
-	$FileRevision -= 1;
+
+	my $FileRevision = 4;
+	while ($FileRevision > 0)
+	{
+		if ($DoFullBackup)
+		{
+			if (-f "$BACKUPDIR/azerothbackup-$FileRevision.tgz")
+			{
+				my $NewVersion = $FileRevision + 1;
+				rename("$BACKUPDIR/azerothbackup-$FileRevision.tgz", "$BACKUPDIR/azerothbackup-$NewVersion.tgz");
+			}
+		}
+		$FileRevision -= 1;
+	}
+	print "Done\nCreating New Backup: ";
+	system("$TARCMD $BACKUPDIR/azerothbackup-1.tgz $MTDIR > /dev/null 2>\&1");
+	print "Done\n";
 }
 
-print "Done\nCreating New Backup: ";
-system("$TARCMD $BACKUPDIR/azerothbackup-1.tgz $MTDIR > /dev/null 2>\&1");
-print "Done\nMoving Existing MySQL data: ";
-if (-f "$BACKUPDIR/azeroth.sql-5")
+print "Moving Existing MySQL data: ";
+if (-f "$BACKUPDIR/azeroth.world.sql-5")
 {
-	unlink("$BACKUPDIR/azeroth.sql-5") or warn "Could not unlink $BACKUPDIR/azeroth.sql-5: $!";
+	unlink("$BACKUPDIR/azeroth.world.sql-5") or warn "Could not unlink $BACKUPDIR/azeroth.world.sql-5: $!";
 }
+if (-f "$BACKUPDIR/azeroth.character.sql-5")
+{
+	unlink("$BACKUPDIR/azeroth.character.sql-5") or warn "Could not unlink $BACKUPDIR/azeroth.character.sql-5: $!";
+}
+if (-f "$BACKUPDIR/azeroth.auth.sql-5")
+{
+	unlink("$BACKUPDIR/azeroth.auth.sql-5") or warn "Could not unlink $BACKUPDIR/azeroth.auth.sql-5: $!";
+}
+print "Done.\n";
 
 $FileRevision = 4;
 while ($FileRevision > 0)
 {
-	if (-f "$BACKUPDIR/azeroth.sql-$FileRevision")
+	if (-f "$BACKUPDIR/azeroth.world.sql-$FileRevision")
 	{
 		my $NewVersion = $FileRevision + 1;
-		rename("$BACKUPDIR/azeroth.sql-$FileRevision", "$BACKUPDIR/azeroth.sql-$NewVersion");
+		rename("$BACKUPDIR/azeroth.world.sql-$FileRevision", "$BACKUPDIR/azeroth.world.sql-$NewVersion");
+	}
+	if (-f "$BACKUPDIR/azeroth.character.sql-$FileRevision")
+	{
+		my $NewVersion = $FileRevision + 1;
+		rename("$BACKUPDIR/azeroth.character.sql-$FileRevision", "$BACKUPDIR/azeroth.character.world.sql-$NewVersion");
+	}
+	if (-f "$BACKUPDIR/azeroth.auth.sql-$FileRevision")
+	{
+		my $NewVersion = $FileRevision + 1;
+		rename("$BACKUPDIR/azeroth.auth.sql-$FileRevision", "$BACKUPDIR/azeroth.auth.sql-$NewVersion");
 	}
 	$FileRevision -= 1;
 }
-
 print "Done\n";
 
-DumpMysql($LATESTFILE);
+DumpMysql("$BACKUPDIR/azeroth");
 
 if ($BACKUPSERVER ne "")
 {
