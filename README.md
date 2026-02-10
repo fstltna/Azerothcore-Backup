@@ -1,9 +1,9 @@
-# AzerothBackup backup script for Azertoth WoW Server (1.0.0)
-Creates a backup of your Azeroth folder
+# AzerothBackup backup script for a Azeroth WoW Server (1.0.0)
+Creates a backup of your Azeroth installation
 
 ---
 
-1. Edit the settings at the top of azerocothbackup.pl if needed
+1. Edit the settings at the top of azerothbackup.pl if needed
 2. create a cron job like this:
 
         1 1 * * * /home/wowowner/Azerothcore-Backup/azerothbackup
@@ -20,7 +20,7 @@ To set up offsite backups:
 1. Make sure ssh-keygen is installed: "apt install ssh-keygen"
 2. Run "ssh-keygen" and when asked for the password just press enter twice
 3. Run "ssh-copy-id -i ~/.ssh/id_rsa.pub your-destination-server" - This will ask you for your remote password. This is normal.
-4. Run "azerocothbackup --prefs" and update the backup fields
+4. Run "azerothbackup --prefs" and update the backup fields
 5. Rerun the backup and it should try and upload the files to your remote site.
 
 If you need more help visit https://wowhosting.gameplayer.club/index.php/ourforum/our-gm-tools
